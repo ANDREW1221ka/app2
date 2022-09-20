@@ -33,7 +33,7 @@ Para borrar manualmente los recursos y reiniciemos node */
 async function listResources() {
 
 try {
-    const url = "http://localhost:8085/api/v4/resources/";
+    const url = "http://"+process.env.EMQX_NODE_HOST + ":8085/api/v4/resources/";
 
     const res = await axios.get(url, auth);
   
@@ -97,12 +97,12 @@ try {
 async function createResources() {
 
     try {
-        const url = "http://localhost:8085/api/v4/resources";
+        const url = "http://"+process.env.EMQX_NODE_HOST + ":8085/api/v4/resources";
 
         const data1 = {
             "type": "web_hook",
             "config": {
-                url: "http://localhost:3001/api1/saver-webhook",
+                url: "http://"+process.env.EMQX_NODE_HOST + ":3001/api1/saver-webhook",
                 headers: {
                     token: "121212"
                 },
@@ -114,7 +114,7 @@ async function createResources() {
         const data2 = {
             "type": "web_hook",
             "config": {
-                url: "http://localhost:3001/api1/alarm-webhook",
+                url: "http://"+process.env.EMQX_NODE_HOST + ":3001/api1/alarm-webhook",
                 headers: {
                     token: "121212"
                 },
@@ -147,7 +147,39 @@ async function createResources() {
    
 
 }
+//check if superuser exist if not we create one
+global.check_mqtt_superuser = async function checkMqttSuperUser(){
 
+  try {
+    const superusers = await EmqxAuthRule.find({type:"superuser"});
+
+    if (superusers.length > 0 ) {
+  
+      return;
+  
+    }else if ( superusers.length == 0 ) {
+  
+      await EmqxAuthRule.create(
+        {
+          publish: ["#"],
+          subscribe: ["#"],
+          userId: "aaaaaaaaaaa",
+          username: "admin",
+          password: "admin",
+          type: "superuser",
+          time: Date.now(),
+          updatedTime: Date.now()
+        }
+      );
+  
+      console.log("Mqtt super user created")
+  
+    }
+  } catch (error) {
+    console.log("error creating mqtt superuser ");
+    console.log(error);
+  }
+}
 
 setTimeout(() => {
   listResources();
