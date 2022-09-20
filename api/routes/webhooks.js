@@ -308,7 +308,7 @@ async function getDeviceMqttCredentials(dId, userId) {
 function startMqttClient() {
   const options = {
     port: 1883,
-    host: process.env.EMQX_NODE_HOST, 
+    host: process.env.EMQX_NODE_HOST,
     clientId:
       "webhook_superuser" + Math.round(Math.random() * (0 - 10000) * -1),
     username: "admin",
